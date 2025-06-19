@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/wiptrax/sitributed-kv-store/db"
+	"github.com/wiptrax/sitributed-kv-store/web"
 )
 
 var (
@@ -32,23 +32,10 @@ func main() {
 	}
 	defer close()
 
-	http.HandleFunc("/get", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
-		key := r.Form.Get("key")
+	srv := web.NewServer(db)
 
-		value, err := db.GetKey(key)
-
-		fmt.Fprintf(w, "Value = %v, error = %v", value, err)
-	})
-	http.HandleFunc("/set", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
-		key := r.Form.Get("key")
-		value := r.Form.Get("value")
-
-		// fmt.Println(key, value)
-		err := db.SetKey(key, []byte(value))
-		fmt.Fprintf(w, "error = %v", err)
-	})
+	http.HandleFunc("/get", srv.GetHandler)
+	http.HandleFunc("/set", srv.SetHandler)
 
 	log.Fatal(http.ListenAndServe(*httpAddr, nil))
 }
