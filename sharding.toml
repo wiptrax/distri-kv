@@ -1,0 +1,14 @@
+[[shards]]
+name = "Delhi"
+idx = 0
+address = "localhost:8080"
+
+[[shards]]
+name = "Mumbai"
+idx = 1
+address = "localhost:8081"
+
+[[shards]]
+name = "Hyderabad"
+idx = 2
+address = "localhost:8082"
