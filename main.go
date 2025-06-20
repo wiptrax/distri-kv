@@ -36,27 +36,15 @@ func main() {
 
 	var c config.Config
 	if _, err := toml.DecodeFile(*configFile, &c); err != nil {
-		log.Fatalf("toml.Decodefile(%q): %v", *configFile, err)
+		log.Fatalf("Error parsing config file(%q): %v", *configFile, err)
 	}
 
-	shardCount := len(c.Shards)
-	var shardIdx int = -1
-	var addrs = make(map[int]string)
-
-
-	for _, s := range c.Shards {
-		addrs[s.Idx] = s.Address
-
-		if s.Name == *shard {
-			shardIdx = s.Idx
-		}
+	shards, err := config.ParseShards(c.Shards, *shard)
+	if err != nil {
+		log.Fatalf("Error parsing shards config: %v", err)
 	}
 
-	if shardIdx < 0 {
-		log.Fatalf("shard %q was not found", *shard)
-	}
-
-	log.Printf("Shard caount is %d, current shard is %d", shardCount, shardIdx)
+	log.Printf("Shard count is %d, current shard: %d", shards.Count, shards.CurIdx)
 
 	db, close, err := db.NewDatabase(*dbLocation)
 	if err != nil {
@@ -64,7 +52,7 @@ func main() {
 	}
 	defer close()
 
-	srv := web.NewServer(db, shardIdx, shardCount, addrs)
+	srv := web.NewServer(db, shards)
 
 	http.HandleFunc("/get", srv.GetHandler)
 	http.HandleFunc("/set", srv.SetHandler)

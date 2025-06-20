@@ -41,7 +41,6 @@ test:
 	@go test -v ./...
 
 # Remove database files
-# Remove database files
 remove:
 ifeq ($(OS),Windows_NT)
 	@del /Q Delhi.db 2>nul || echo Delhi.db not found
