@@ -23,10 +23,17 @@ run: build
 # Run three instances in background
 run-multi: build
 ifeq ($(OS),Windows_NT)
-	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Delhi.db','--http-addr=127.0.0.1:8080','--config-file=sharding.toml','--shard=Delhi'"
-	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Mumbai.db','--http-addr=127.0.0.1:8081','--config-file=sharding.toml','--shard=Mumbai'"
-	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=ggwp.db','--http-addr=127.0.0.1:8082','--config-file=sharding.toml','--shard=ggwp'"
-	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=nicetry.db','--http-addr=127.0.0.1:8083','--config-file=sharding.toml','--shard=nicetry'"
+	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Delhi.db','--http-addr=127.0.0.2:8080','--config-file=sharding.toml','--shard=Delhi'"
+	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Delhi-R.db','--http-addr=127.0.0.22:8080','--config-file=sharding.toml','--shard=Delhi' --replica"
+
+	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Mumbai.db','--http-addr=127.0.0.3:8080','--config-file=sharding.toml','--shard=Mumbai'"
+	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Mumbai-R.db','--http-addr=127.0.0.33:8080','--config-file=sharding.toml','--shard=Mumbai' --replica"
+
+	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Hyderabad.db','--http-addr=127.0.0.4:8080','--config-file=sharding.toml','--shard=Hyderabad'"
+	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Hyderabad-R.db','--http-addr=127.0.0.44:8080','--config-file=sharding.toml','--shard=Hyderabad' --replica"
+
+	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Chennai.db','--http-addr=127.0.0.5:8080','--config-file=sharding.toml','--shard=Chennai'"
+	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Chennai-R.db','--http-addr=127.0.0.55:8080','--config-file=sharding.toml','--shard=Chennai' --replica"
 	
 else
 	@./$(BINARY_NAME) --db-location=Delhi.db --http-addr=127.0.0.1:8080 --config-file=sharding.toml --shard=Delhi &
@@ -47,8 +54,8 @@ remove:
 ifeq ($(OS),Windows_NT)
 	@del /Q Delhi.db 2>nul || echo Delhi.db not found
 	@del /Q Mumbai.db 2>nul || echo Mumbai.db not found
-	@del /Q ggwp.db 2>nul || echo ggwp.db not found
-	@del /Q nicetry.db 2>nul || echo nicetry.db not found
+	@del /Q Hyderabad.db 2>nul || echo Hyderabad.db not found
+	@del /Q Chennai.db 2>nul || echo Chennai.db not found
 	
 else
 	@rm -f Delhi.db Mumbai.db Hyderabad.db

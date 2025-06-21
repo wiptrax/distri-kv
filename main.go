@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/BurntSushi/toml"
 	"github.com/wiptrax/dsitributed-kv-store/config"
 	"github.com/wiptrax/dsitributed-kv-store/db"
 	"github.com/wiptrax/dsitributed-kv-store/web"
@@ -16,6 +15,7 @@ var (
 	httpAddr   = flag.String("http-addr", "127.0.0.1:8080", "HTTP host and port")
 	configFile = flag.String("config-file", "sharding.toml", "Config file for static sharding")
 	shard      = flag.String("shard", "", "the name of shard for the data")
+	replica    = flag.Bool("replica", false, "Whether or not run as a read-only replica")
 )
 
 func parseFlags() {
@@ -34,9 +34,9 @@ func parseFlags() {
 func main() {
 	parseFlags()
 
-	var c config.Config
-	if _, err := toml.DecodeFile(*configFile, &c); err != nil {
-		log.Fatalf("Error parsing config file(%q): %v", *configFile, err)
+	c, err := config.Parsefile(*configFile)
+	if err != nil {
+		log.Fatalf("Error parsing config %q: %v", *configFile, err)
 	}
 
 	shards, err := config.ParseShards(c.Shards, *shard)
@@ -46,7 +46,7 @@ func main() {
 
 	log.Printf("Shard count is %d, current shard: %d", shards.Count, shards.CurIdx)
 
-	db, close, err := db.NewDatabase(*dbLocation)
+	db, close, err := db.NewDatabase(*dbLocation, *replica)
 	if err != nil {
 		log.Fatalf("NewDatabse(%q) :%v", *dbLocation, err)
 	}
@@ -57,6 +57,8 @@ func main() {
 	http.HandleFunc("/get", srv.GetHandler)
 	http.HandleFunc("/set", srv.SetHandler)
 	http.HandleFunc("/purge", srv.DeleteExtraKeysHandler)
+	http.HandleFunc("/next-replication-key", srv.GetNextKeyForReplication)
+	http.HandleFunc("/delete-replication-key", srv.DeleteReplicationKey)
 
 	log.Fatal(http.ListenAndServe(*httpAddr, nil))
 }
