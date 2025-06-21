@@ -9,6 +9,11 @@ idx = 1
 address = "localhost:8081"
 
 [[shards]]
-name = "Hyderabad"
+name = "ggwp"
 idx = 2
 address = "localhost:8082"
+
+[[shards]]
+name = "nicetry"
+idx = 3
+address = "localhost:8083"

@@ -25,7 +25,9 @@ run-multi: build
 ifeq ($(OS),Windows_NT)
 	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Delhi.db','--http-addr=127.0.0.1:8080','--config-file=sharding.toml','--shard=Delhi'"
 	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Mumbai.db','--http-addr=127.0.0.1:8081','--config-file=sharding.toml','--shard=Mumbai'"
-	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=Hyderabad.db','--http-addr=127.0.0.1:8082','--config-file=sharding.toml','--shard=Hyderabad'"
+	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=ggwp.db','--http-addr=127.0.0.1:8082','--config-file=sharding.toml','--shard=ggwp'"
+	@powershell -Command "Start-Process $(BINARY_NAME) -ArgumentList '--db-location=nicetry.db','--http-addr=127.0.0.1:8083','--config-file=sharding.toml','--shard=nicetry'"
+	
 else
 	@./$(BINARY_NAME) --db-location=Delhi.db --http-addr=127.0.0.1:8080 --config-file=sharding.toml --shard=Delhi &
 	@./$(BINARY_NAME) --db-location=Mumbai.db --http-addr=127.0.0.1:8081 --config-file=sharding.toml --shard=Mumbai &
@@ -45,8 +47,34 @@ remove:
 ifeq ($(OS),Windows_NT)
 	@del /Q Delhi.db 2>nul || echo Delhi.db not found
 	@del /Q Mumbai.db 2>nul || echo Mumbai.db not found
-	@del /Q Hyderabad.db 2>nul || echo Hyderabad.db not found
+	@del /Q ggwp.db 2>nul || echo ggwp.db not found
+	@del /Q nicetry.db 2>nul || echo nicetry.db not found
+	
 else
 	@rm -f Delhi.db Mumbai.db Hyderabad.db
 endif
 	@echo "Database files removed."
+
+# Load test using curl to hit shard endpoints with unique data
+load-test:
+	@for SHARD in 127.0.0.1:8080 127.0.0.1:8081; do \
+		for i in $$(seq 1 1000); do \
+			RANDOM_NUM=$$(od -An -N2 -i /dev/urandom | tr -d ' '); \
+			echo "[$$i] Sending to $$SHARD with key=key-$$RANDOM_NUM"; \
+			curl -s "http://$$SHARD/set?key=key-$$RANDOM_NUM&value=value-$$RANDOM_NUM" > /dev/null; \
+		done; \
+	done
+
+
+
+# [352] Sending to 127.0.0.1:8080 with key=key-50791	1
+# [353] Sending to 127.0.0.1:8080 with key=key-19242
+# [354] Sending to 127.0.0.1:8080 with key=key-58472
+# [355] Sending to 127.0.0.1:8080 with key=key-54727	0
+# [356] Sending to 127.0.0.1:8080 with key=key-53263
+
+# [996] Sending to 127.0.0.1:8081 with key=key-53541	1
+# [997] Sending to 127.0.0.1:8081 with key=key-29244
+# [998] Sending to 127.0.0.1:8081 with key=key-59131
+# [999] Sending to 127.0.0.1:8081 with key=key-43965
+# [1000] Sending to 127.0.0.1:8081 with key=key-16017	0	2
