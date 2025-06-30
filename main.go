@@ -7,6 +7,7 @@ import (
 
 	"github.com/wiptrax/dsitributed-kv-store/config"
 	"github.com/wiptrax/dsitributed-kv-store/db"
+	"github.com/wiptrax/dsitributed-kv-store/replication"
 	"github.com/wiptrax/dsitributed-kv-store/web"
 )
 
@@ -51,6 +52,14 @@ func main() {
 		log.Fatalf("NewDatabse(%q) :%v", *dbLocation, err)
 	}
 	defer close()
+
+	if *replica {
+		leaderAddr, ok := shards.Addrs[shards.CurIdx]
+		if !ok {
+			log.Fatalf("Could not find address for leader for shard %d", shards.CurIdx)
+		}
+		go replication.ClientLoop(db, leaderAddr)
+	}
 
 	srv := web.NewServer(db, shards)
 

@@ -46,6 +46,15 @@ func (d *DataBase) createDefaultBuckets() error {
 	})
 }
 
+// SetKeyOnReplica sets the key to the requested value into the default database and does not write
+// to the replication queue.
+// This method is intended to be used only on replicas.
+func (d *DataBase) SetKeyOnReplica(key string, value []byte) error {
+	return d.db.Update(func(tx *bolt.Tx) error {
+		return tx.Bucket(defaultBucket).Put([]byte(key), value)
+	})
+}
+
 func copyByteSlice(b []byte) []byte {
 	if b == nil {
 		return nil

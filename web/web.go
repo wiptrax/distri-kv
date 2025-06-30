@@ -8,6 +8,7 @@ import (
 
 	"github.com/wiptrax/dsitributed-kv-store/config"
 	"github.com/wiptrax/dsitributed-kv-store/db"
+	"github.com/wiptrax/dsitributed-kv-store/replication"
 )
 
 // Server contains HTTP method handler to be used for the database
@@ -78,18 +79,12 @@ func (s *Server) DeleteExtraKeysHandler(w http.ResponseWriter, r *http.Request) 
 	}))
 }
 
-// NextKeyValue contains the response for GetNextKeyForReplication.
-type NextKeyValue struct {
-	Key   string
-	Value string
-	Err   error
-}
 
 // GetNextKeyForReplication returns the next key for replication.
 func (s *Server) GetNextKeyForReplication(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	k, v, err := s.db.GetNextKeyForReplication()
-	enc.Encode(&NextKeyValue{
+	enc.Encode(&replication.NextKeyValue{
 		Key:   string(k),
 		Value: string(v),
 		Err:   err,
