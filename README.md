@@ -91,7 +91,7 @@ Removes all .db files for a clean restart.
 
 🎊 Example
 
-![example](https://github.com/wiptrax/distri-kv/example.png)
+![example](https://github.com/wiptrax/distri-kv/blob/main/example.png)
 
 🛣️ Future Improvements
 
